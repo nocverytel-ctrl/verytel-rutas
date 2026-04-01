@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d0f14">
+<title>Verytel — Mi Ruta</title>
+<style>
+:root{--bg:#0d0f14;--surface:#161923;--surface2:#1e2535;--border:#2a3348;--accent:#00d4aa;--text:#e2e8f0;--text2:#94a3b8;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);}
+body{display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
+
+/* LOGIN */
+.login-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:16px;}
+.login-logo{text-align:center;margin-bottom:8px;}
+.login-logo img{height:44px;object-fit:contain;}
+.login-title{font-size:20px;font-weight:700;color:var(--text);}
+.login-sub{font-size:13px;color:var(--text2);text-align:center;}
+.inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text);font-size:15px;outline:none;}
+.inp:focus{border-color:var(--accent);}
+.inp::placeholder{color:var(--text2);}
+.btn-login{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+.btn-login:active{opacity:.8;}
+.login-err{color:#ef4444;font-size:13px;text-align:center;display:none;}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.hdr-left{display:flex;align-items:center;gap:10px;}
+.tec-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hdr-name{font-size:14px;font-weight:700;}
+.hdr-fecha{font-size:11px;color:var(--text2);}
+.hdr-right{display:flex;align-items:center;gap:8px;}
+.badge{font-size:10px;font-family:monospace;padding:3px 8px;border-radius:12px;font-weight:700;}
+.badge-pend{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);}
+.badge-ok{background:rgba(0,212,170,.15);color:var(--accent);border:1px solid rgba(0,212,170,.3);}
+.logout-btn{background:none;border:1px solid var(--border);color:var(--text2);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;}
+
+/* PROGRESO */
+.prog-section{padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+.prog-nums{display:flex;gap:16px;margin-bottom:8px;}
+.prog-num{text-align:center;}
+.prog-val{font-size:22px;font-weight:700;line-height:1;}
+.prog-lbl{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;}
+.prog-bar-bg{background:var(--surface2);border-radius:4px;height:8px;overflow:hidden;}
+.prog-bar-fill{height:100%;border-radius:4px;transition:width .4s ease;}
+
+/* LISTA */
+.lista{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+.lista::-webkit-scrollbar{display:none;}
+
+/* TARJETA SITIO */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s;}
+.card.completado{opacity:.6;border-color:rgba(0,212,170,.3);}
+.card.no_ingreso{opacity:.6;border-color:rgba(239,68,68,.3);}
+.card-header{display:flex;align-items:center;gap:12px;padding:14px;}
+.card-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+.card-info{flex:1;min-width:0;}
+.card-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-addr{font-size:11px;color:var(--text2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-status{font-size:10px;font-weight:700;font-family:monospace;padding:3px 8px;border-radius:8px;}
+.st-pendiente{background:rgba(148,163,184,.1);color:var(--text2);}
+.st-en_camino{background:rgba(59,130,246,.15);color:#3b82f6;}
+.st-en_sitio{background:rgba(245,158,11,.15);color:#f59e0b;}
+.st-completado{background:rgba(0,212,170,.15);color:var(--accent);}
+.st-no_ingreso{background:rgba(239,68,68,.15);color:#ef4444;}
+
+.card-obs{padding:0 14px 10px;font-size:11px;color:#f59e0b;border-top:1px solid var(--border);padding-top:8px;margin:0 14px 10px;}
+.card-actions{display:flex;gap:8px;padding:0 14px 14px;}
+.act-btn{flex:1;padding:10px 8px;border-radius:8px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:5px;}
+.act-btn:active{transform:scale(.97);}
+.btn-maps{background:rgba(59,130,246,.15);color:#3b82f6;border:1px solid rgba(59,130,246,.3);}
+.btn-llegue{background:rgba(0,212,170,.15);color:var(--accent);border:1px solid rgba(0,212,170,.3);}
+.btn-salio{background:var(--accent);color:#000;}
+.btn-noing{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25);}
+
+/* ESTADOS */
+.screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;}
+.screen-icon{font-size:48px;}
+.screen-title{font-size:18px;font-weight:700;}
+.screen-sub{font-size:13px;color:var(--text2);line-height:1.5;}
+.spin{width:40px;height:40px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:sp .8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--text);z-index:9999;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;max-width:90vw;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* SIN RUTA */
+.sin-ruta{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-logo">
+    <div style="font-size:36px;">🗺️</div>
+    <div style="font-size:22px;font-weight:700;color:var(--accent);margin-top:8px;">VERYTEL</div>
+    <div style="font-size:12px;color:var(--text2);">App de Técnicos</div>
+  </div>
+  <input class="inp" id="loginUser" type="text" placeholder="Usuario" autocomplete="username"/>
+  <input class="inp" id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password"/>
+  <div class="login-err" id="loginErr">Usuario o contraseña incorrectos</div>
+  <button class="btn-login" onclick="doLogin()">Entrar</button>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="mainApp" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+  <header>
+    <div class="hdr-left">
+      <div class="tec-dot" id="hdrDot"></div>
+      <div>
+        <div class="hdr-name" id="hdrName">—</div>
+        <div class="hdr-fecha" id="hdrFecha">—</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <span class="badge badge-pend" id="hdrPend">0 pend.</span>
+      <button class="logout-btn" onclick="doLogout()">Salir</button>
+    </div>
+  </header>
+
+  <div class="prog-section" id="progSection" style="display:none;">
+    <div class="prog-nums">
+      <div class="prog-num"><div class="prog-val" id="pTotal" style="color:var(--text2);">0</div><div class="prog-lbl">Total</div></div>
+      <div class="prog-num"><div class="prog-val" id="pComp" style="color:var(--accent);">0</div><div class="prog-lbl">Listo</div></div>
+      <div class="prog-num"><div class="prog-val" id="pSitio" style="color:#f59e0b;">0</div><div class="prog-lbl">En sitio</div></div>
+      <div class="prog-num"><div class="prog-val" id="pNoIng" style="color:#ef4444;">0</div><div class="prog-lbl">No ingresó</div></div>
+    </div>
+    <div class="prog-bar-bg">
+      <div class="prog-bar-fill" id="progBarFill" style="width:0%;background:var(--accent);"></div>
+    </div>
+  </div>
+
+  <div class="lista" id="listaRuta"></div>
+</div>
+
+<!-- LOADING -->
+<div id="loadingScreen" class="screen" style="display:none;">
+  <div class="spin"></div>
+  <div class="screen-title">Cargando tu ruta...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+const API_URL = 'https://janessa-afflated-samson.ngrok-free.dev';
+// ══════════════════════════════════════════
+
+let sesion = null;  // {tecnico, ruta_id, fecha, color}
+let rutaData = [];  // sitios con estado_visita
+
+function show(id) {
+  ['loginScreen','mainApp','loadingScreen'].forEach(s => {
+    const el = document.getElementById(s);
+    if (el) el.style.display = s===id ? (s==='mainApp'?'flex':'flex') : 'none';
+  });
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 3000);
+}
+
+function sv(v) { return v===null||v===undefined?'':String(v); }
+
+// ── LOGIN ─────────────────────────────────
+async function doLogin() {
+  const usuario  = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value.trim();
+  if (!usuario || !password) { document.getElementById('loginErr').style.display='block'; return; }
+
+  show('loadingScreen');
+  try {
+    const res = await fetch(API_URL+'/tecnicos/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+      body: JSON.stringify({usuario, password})
+    });
+    const data = await res.json();
+    if (data.status !== 'ok') {
+      document.getElementById('loginErr').style.display='block';
+      show('loginScreen'); return;
+    }
+    sesion = { tecnico: data.tecnico };
+    localStorage.setItem('verytel_sesion', JSON.stringify(sesion));
+    await cargarRuta();
+  } catch(e) {
+    toast('Error de conexión: '+e.message);
+    show('loginScreen');
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('verytel_sesion');
+  sesion = null; rutaData = [];
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+  document.getElementById('loginErr').style.display='none';
+  show('loginScreen');
+}
+
+// ── CARGAR RUTA ───────────────────────────
+async function cargarRuta() {
+  show('loadingScreen');
+  const hoy = new Date();
+  const fecha = hoy.getFullYear()+'-'+(hoy.getMonth()+1).toString().padStart(2,'0')+'-'+hoy.getDate().toString().padStart(2,'0');
+
+  try {
+    const res = await fetch(API_URL+'/tecnicos/mi-ruta?tecnico_id='+sesion.tecnico.id+'&fecha='+fecha, {
+      headers:{'ngrok-skip-browser-warning':'true'}
+    });
+    const data = await res.json();
+
+    // Update header
+    document.getElementById('hdrName').textContent = sesion.tecnico.nombre || data.tecnico || 'Técnico';
+    document.getElementById('hdrFecha').textContent = formatFecha(fecha);
+    document.getElementById('hdrDot').style.background = sesion.tecnico.color || data.color || '#00d4aa';
+
+    if (data.status === 'sin_ruta') {
+      renderSinRuta(fecha);
+      show('mainApp');
+      return;
+    }
+
+    sesion.ruta_id = data.ruta_id;
+    sesion.color   = data.color || sesion.tecnico.color;
+    rutaData = data.sitios || [];
+    show('mainApp');
+    renderRuta();
+  } catch(e) {
+    toast('Error al cargar ruta: '+e.message);
+    show('loginScreen');
+  }
+}
+
+function formatFecha(f) {
+  const [y,m,d] = f.split('-');
+  const meses = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return d+' de '+meses[parseInt(m)]+' '+y;
+}
+
+// ── RENDER RUTA ───────────────────────────
+function renderRuta() {
+  const lista = document.getElementById('listaRuta');
+  const c = sesion.color || '#00d4aa';
+  const dark = c==='#00d4aa'||c==='#f59e0b';
+
+  // Progreso
+  const total = rutaData.length;
+  const comp   = rutaData.filter(s=>s.estado_visita==='completado').length;
+  const enSit  = rutaData.filter(s=>s.estado_visita==='en_sitio').length;
+  const noIng  = rutaData.filter(s=>s.estado_visita==='no_ingreso').length;
+  const pend   = total - comp - noIng;
+
+  document.getElementById('progSection').style.display = total>0?'':'none';
+  document.getElementById('pTotal').textContent  = total;
+  document.getElementById('pComp').textContent   = comp;
+  document.getElementById('pSitio').textContent  = enSit;
+  document.getElementById('pNoIng').textContent  = noIng;
+  document.getElementById('hdrPend').textContent = pend+' pend.';
+  document.getElementById('hdrPend').className   = 'badge '+(pend>0?'badge-pend':'badge-ok');
+  const pct = total>0 ? Math.round((comp+noIng)/total*100) : 0;
+  document.getElementById('progBarFill').style.width = pct+'%';
+
+  lista.innerHTML = '';
+  if (!rutaData.length) { renderSinRuta('hoy'); return; }
+
+  rutaData.forEach((s, i) => {
+    const est = s.estado_visita || 'pendiente';
+    const card = document.createElement('div');
+    card.className = 'card '+est;
+    card.id = 'card_'+s.id;
+
+    const stLabel = {
+      pendiente:'Pendiente', en_camino:'En camino',
+      en_sitio:'En sitio', completado:'✓ Completado', no_ingreso:'✗ No ingresó'
+    }[est] || est;
+
+    let acciones = '';
+    if (est === 'pendiente' || est === 'en_camino') {
+      acciones = `
+        <button class="act-btn btn-maps" onclick="irMaps(${s.lat},${s.lng})">🗺️ Ir</button>
+        <button class="act-btn btn-llegue" onclick="registrar(${s.id},'llegada')">📍 Llegué</button>
+        <button class="act-btn btn-noing" onclick="registrar(${s.id},'no_ingreso')">🚫 No ingresé</button>`;
+    } else if (est === 'en_sitio') {
+      acciones = `
+        <button class="act-btn btn-maps" onclick="irMaps(${s.lat},${s.lng})">🗺️ Ver mapa</button>
+        <button class="act-btn btn-salio" onclick="registrar(${s.id},'salida')" style="flex:2;">✅ Terminé — Salir</button>`;
+    } else {
+      acciones = `<button class="act-btn btn-maps" onclick="irMaps(${s.lat},${s.lng})">🗺️ Ver ubicación</button>`;
+    }
+
+    const obsHtml = sv(s.notes) ? `<div class="card-obs">📋 ${sv(s.notes)}</div>` : '';
+
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="card-num" style="background:${c};color:${dark?'#000':'#fff'}">${i+1}</div>
+        <div class="card-info">
+          <div class="card-name" title="${sv(s.name)}">${sv(s.name)}</div>
+          <div class="card-addr">${sv(s.address)} · ${sv(s.localidad_name)}</div>
+        </div>
+        <span class="card-status st-${est}">${stLabel}</span>
+      </div>
+      ${obsHtml}
+      <div class="card-actions">${acciones}</div>`;
+    lista.appendChild(card);
+  });
+}
+
+function renderSinRuta(fecha) {
+  document.getElementById('progSection').style.display = 'none';
+  document.getElementById('listaRuta').innerHTML = `
+    <div class="sin-ruta">
+      <div class="screen-icon">📋</div>
+      <div class="screen-title">Sin ruta para hoy</div>
+      <div class="screen-sub">El coordinador aún no ha publicado tu ruta del ${formatFecha(fecha)}.<br>Comunícate con tu coordinador.</div>
+      <button class="btn-login" onclick="cargarRuta()" style="margin-top:8px;width:200px;">🔄 Actualizar</button>
+    </div>`;
+}
+
+// ── REGISTRAR VISITA ──────────────────────
+async function registrar(sitio_id, accion) {
+  if (!sesion.ruta_id) { toast('Sin ruta activa'); return; }
+  try {
+    const res = await fetch(API_URL+'/tecnicos/registrar-visita', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'true'},
+      body: JSON.stringify({ruta_id: sesion.ruta_id, sitio_id, accion})
+    });
+    const data = await res.json();
+    if (data.status === 'ok') {
+      // Actualizar estado local
+      const s = rutaData.find(x=>x.id===sitio_id);
+      if (s) {
+        if (accion==='llegada')    { s.estado_visita='en_sitio';    toast('📍 Llegada registrada'); }
+        if (accion==='salida')     { s.estado_visita='completado';  toast('✅ Visita completada'); }
+        if (accion==='no_ingreso') { s.estado_visita='no_ingreso';  toast('🚫 Registrado como no ingreso'); }
+      }
+      renderRuta();
+    } else {
+      toast('Error: '+data.mensaje);
+    }
+  } catch(e) {
+    toast('Error de conexión');
+  }
+}
+
+// ── GOOGLE MAPS ───────────────────────────
+function irMaps(lat, lng) {
+  window.open('https://www.google.com/maps/dir/?api=1&destination='+lat+','+lng+'&travelmode=driving','_blank');
+}
+
+// ── AUTO LOGIN si hay sesión guardada ─────
+window.addEventListener('load', async () => {
+  const saved = localStorage.getItem('verytel_sesion');
+  if (saved) {
+    try {
+      sesion = JSON.parse(saved);
+      await cargarRuta();
+    } catch(e) {
+      localStorage.removeItem('verytel_sesion');
+      show('loginScreen');
+    }
+  } else {
+    show('loginScreen');
+  }
+});
+</script>
+</body>
+</html>
